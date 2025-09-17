@@ -1,0 +1,1593 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hockey Drills Database</title>
+    <style>
+        /* ===== Design Tokens (Light) ===== */
+        :root {
+            --bg: #0b0c0f;
+            --app-bg: #ffffff;
+            --text: #0f172a;
+            --muted: #465065;
+            --border: #e5e7eb;
+            --elev-1: #ffffff;
+            --elev-2: #f8fafc;
+            --primary: #2563eb;
+            --primary-ink: #ffffff;
+            --ring: 0 0 0 3px rgba(37, 99, 235, .25);
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #dc2626;
+            --radius: 14px;
+            --shadow-sm: 0 1px 2px rgba(2,6,23,.08);
+            --shadow-md: 0 6px 24px rgba(2,6,23,.08), 0 2px 6px rgba(2,6,23,.06);
+            --shadow-lg: 0 24px 48px rgba(2,6,23,.10);
+        }
+
+        /* ===== Design Tokens (Dark) ===== */
+        .theme-dark {
+            --app-bg: #0b1220;
+            --text: #e5edff;
+            --muted: #9aa6c2;
+            --border: #1e293b;
+            --elev-1: #0e1628;
+            --elev-2: #0b1324;
+            --primary: #60a5fa;
+            --primary-ink: #0b1220;
+            --ring: 0 0 0 3px rgba(96, 165, 250, .25);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+        }
+
+        /* ===== Base Reset ===== */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 15px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        }
+
+        /* App frame */
+        .app {
+            min-height: 100vh;
+            background: radial-gradient(1200px 600px at 15% -10%, rgba(37,99,235,.10), transparent 60%),
+                        radial-gradient(900px 600px at 110% -20%, rgba(16,185,129,.08), transparent 60%),
+                        var(--app-bg);
+        }
+
+        /* ===== Top Nav ===== */
+        .topbar {
+            position: sticky; 
+            top: 0; 
+            z-index: 40;
+            backdrop-filter: saturate(120%) blur(8px);
+            background: color-mix(in srgb, var(--app-bg) 82%, transparent);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 14px 20px; 
+        }
+        
+        .row { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            justify-content: space-between; 
+        }
+        
+        .brand { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: 700; 
+            letter-spacing: .2px; 
+        }
+        
+        .brand .dot { 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, var(--primary), #10b981); 
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent); 
+        }
+
+        /* ===== Buttons ===== */
+        .btn { 
+            appearance: none; 
+            border: 1px solid var(--border); 
+            background: var(--elev-1); 
+            color: var(--text);
+            padding: 10px 14px; 
+            border-radius: calc(var(--radius) - 6px); 
+            cursor: pointer; 
+            box-shadow: var(--shadow-sm);
+            transition: transform .08s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .btn:hover { 
+            transform: translateY(-1px); 
+            box-shadow: var(--shadow-md); 
+        }
+        
+        .btn:focus-visible { 
+            outline: none; 
+            box-shadow: var(--shadow-md), var(--ring); 
+        }
+        
+        .btn.primary { 
+            background: var(--primary); 
+            color: var(--primary-ink); 
+            border-color: color-mix(in srgb, var(--primary) 20%, var(--border)); 
+        }
+        
+        .btn.ghost { 
+            background: transparent; 
+        }
+        
+        .btn.danger {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* ===== Cards ===== */
+        .card { 
+            background: var(--elev-1); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow-md); 
+            overflow: hidden; 
+        }
+        
+        .card .head { 
+            padding: 16px 18px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 12px; 
+        }
+        
+        .card .body { 
+            padding: 18px; 
+        }
+
+        /* ===== Inputs ===== */
+        .field { 
+            display: grid; 
+            gap: 6px; 
+        }
+        
+        label { 
+            color: var(--muted); 
+            font-size: 13px; 
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%; 
+            padding: 10px 12px; 
+            border-radius: calc(var(--radius) - 8px);
+            border: 1px solid var(--border); 
+            background: var(--elev-2); 
+            color: var(--text);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            box-shadow: var(--ring); 
+            border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); 
+        }
+
+        /* ===== Badge ===== */
+        .badge { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 6px 10px; 
+            border-radius: 999px; 
+            border: 1px solid var(--border); 
+            background: var(--elev-2); 
+            font-size: 12px; 
+        }
+
+        /* ===== Layout ===== */
+        .main-content {
+            padding: 26px 20px;
+        }
+
+        .hero {
+            padding: 32px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 3.5vw, 42px);
+            margin: 0 0 12px;
+            letter-spacing: -.02em;
+            font-weight: 600;
+        }
+
+        .hero p {
+            color: var(--muted);
+            margin: 0 auto 22px;
+            max-width: 60ch;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .sidebar .card {
+            margin-bottom: 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tag {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: var(--elev-2);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: calc(var(--radius) - 8px);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover {
+            background: var(--elev-1);
+            transform: translateX(2px);
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: var(--primary-ink);
+            border-color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        .drill-grid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drill-item {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            transition: background 0.2s ease;
+        }
+
+        .drill-item:last-child {
+            border-bottom: none;
+        }
+
+        .drill-item:hover {
+            background: var(--elev-2);
+        }
+
+        .drill-name {
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .drill-name a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .drill-name a:hover {
+            color: color-mix(in srgb, var(--primary) 80%, var(--text));
+            text-decoration: underline;
+        }
+
+        .drill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+            flex-shrink: 1;
+        }
+
+        .drill-tag {
+            background: var(--primary);
+            color: var(--primary-ink);
+            padding: 4px 8px;
+            border-radius: calc(var(--radius) - 8px);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        /* Utility */
+        .flex { 
+            display: flex; 
+            gap: 12px; 
+            align-items: center; 
+        }
+        
+        .stack { 
+            display: grid; 
+            gap: 14px; 
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .sidebar {
+                position: static;
+                max-height: none;
+                order: 2;
+            }
+
+            .content {
+                order: 1;
+            }
+
+            .tags-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tag {
+                width: auto;
+                flex: 0 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .hero {
+                padding: 24px 15px;
+            }
+
+            .drill-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .drill-tags {
+                justify-content: flex-start;
+                width: 100%;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- ===== Top Navigation ===== -->
+        <header class="topbar">
+            <div class="container">
+                <div class="row">
+                    <div class="brand">
+                        <span class="dot" aria-hidden="true"></span>
+                        <span>Hockey Drills</span>
+                        <span class="badge">88 drills</span>
+                    </div>
+                    <div class="flex">
+                        <button class="btn ghost" id="themeToggle" aria-label="Toggle theme">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3a9 9 0 1 0 9 9a7 7 0 0 1-9-9Z"/>
+                            </svg>
+                            Theme
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== Hero Section ===== -->
+        <section class="hero">
+            <div class="container">
+                <h1>Hockey Drills Database</h1>
+                <p>Search and filter through 88 professional hockey drills with 30 categories</p>
+            </div>
+        </section>
+
+        <!-- ===== Main Content ===== -->
+        <section class="main-content">
+            <div class="container">
+                <div class="layout">
+                    <!-- ===== Sidebar ===== -->
+                    <aside class="sidebar">
+                        <div class="card">
+                            <div class="head">
+                                <span>Filters</span>
+                            </div>
+                            <div class="body stack">
+                                <div class="sidebar-section">
+                                    <div class="field">
+                                        <label for="searchBox">Search Drills</label>
+                                        <input type="text" id="searchBox" placeholder="Search drills by name...">
+                                    </div>
+                                </div>
+                                
+                                <div class="sidebar-section">
+                                    <label>Filter by Category</label>
+                                    <div class="tags-container" id="tagsContainer">
+                                        <!-- Tags will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                                
+                                <button class="btn danger" onclick="clearAllFilters()">Clear All Filters</button>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- ===== Main Content ===== -->
+                    <main class="content">
+                        <div class="stats">
+                            <span id="resultsCount">Showing 88 drills</span>
+                            <span id="activeFilters">No filters active</span>
+                        </div>
+
+                        <div class="card">
+                            <div class="drill-grid" id="drillGrid">
+                                <!-- Drills will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="no-results" id="noResults" style="display: none;">
+                            <h3>No drills found</h3>
+                            <p>Try adjusting your search or removing some filters</p>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Data
+        const drills = [
+  {
+    "name": "Triangle Tag",
+    "link": "https://www.icehockeysystems.com/hockey-drills/triangle-tag",
+    "tags": [
+      "Angling"
+    ],
+    "theme": "Angling",
+    "sub_category": ""
+  },
+  {
+    "name": "1 on 1 Angling Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/1-on-1-angling-drill",
+    "tags": [
+      "Angling",
+      "Competitive Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling"
+  },
+  {
+    "name": "1 v 1 Circle (Stick vs. No Stick)",
+    "link": "https://www.icehockeysystems.com/hockey-drills/1-v-1-circle-stick-vs.-no-stick",
+    "tags": [
+      "Competitive Contact",
+      "Gap Control"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Gap Control"
+  },
+  {
+    "name": "1 v 1 Stick Battle",
+    "link": "https://www.icehockeysystems.com/hockey-drills/1-v-1-stick-battle",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "Angling Small Area Game",
+    "link": "",
+    "tags": [
+      "Competitive Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": ""
+  },
+  {
+    "name": "Chute Angling 1 V 1",
+    "link": "https://www.icehockeysystems.com/hockey-drills/chute-angling-1-v-1",
+    "tags": [
+      "Angling",
+      "Competitive Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling"
+  },
+  {
+    "name": "Corner Puck Battle",
+    "link": "https://www.icehockeysystems.com/hockey-drills/corner-puck-battle",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "Cross Ice Ringette",
+    "link": "https://www.icehockeysystems.com/hockey-drills/cross-ice-ringette",
+    "tags": [
+      "Angling",
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact, Angling"
+  },
+  {
+    "name": "Defend the Bucket",
+    "link": "https://www.icehockeysystems.com/hockey-drills/defend-bucket",
+    "tags": [
+      "Competitive Contact",
+      "Gap Control"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Gap Control"
+  },
+  {
+    "name": "Forecheck Angling",
+    "link": "https://www.icehockeysystems.com/hockey-drills/forecheck-angling",
+    "tags": [
+      "Angling",
+      "Competitive Contact",
+      "Forecheck"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling, Forecheck"
+  },
+  {
+    "name": "Hit Through the Hands",
+    "link": "https://www.icehockeysystems.com/hockey-drills/hit-through-hands",
+    "tags": [
+      "Angling",
+      "Competitive Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling"
+  },
+  {
+    "name": "Puck Protection Weight Shift Moving",
+    "link": "https://www.icehockeysystems.com/hockey-drills/puck-protection-weight-shift-moving",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "Puck Protection Weight Shifting (Standing Still)",
+    "link": "https://www.icehockeysystems.com/hockey-drills/puck-protection-weight-shifting-standing-still",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "RedZone",
+    "link": "https://www.icehockeysystems.com/hockey-drills/redzone",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "Side by Side Checking",
+    "link": "https://www.icehockeysystems.com/hockey-drills/side-by-side-checking",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "USA Step Forward Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/usa-step-forward-drill",
+    "tags": [
+      "Competitive Contact",
+      "Delivering and Receiving Body Contact"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Delivering and Receiving Body Contact"
+  },
+  {
+    "name": "Soccer on Ice - Station",
+    "link": "https://www.icehockeysystems.com/hockey-drills/soccer-on-ice-station",
+    "tags": [
+      "Competitive Contact",
+      "Fun",
+      "Skating"
+    ],
+    "theme": "Competitive Contact, Skating",
+    "sub_category": "Fun"
+  },
+  {
+    "name": "Dodgeball",
+    "link": "https://www.icehockeysystems.com/hockey-drills/dodgeball",
+    "tags": [
+      "Fun"
+    ],
+    "theme": "Fun",
+    "sub_category": ""
+  },
+  {
+    "name": "Levels 3 vs 3 Small Area Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/levels-3-vs-3-small-area-game",
+    "tags": [
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "Relay Race #1",
+    "link": "https://www.icehockeysystems.com/hockey-drills/relay-race-1",
+    "tags": [
+      "Skating",
+      "Stickhandling"
+    ],
+    "theme": "Skating, Stickhandling",
+    "sub_category": ""
+  },
+  {
+    "name": "Sharks and Minnows w/ Puck",
+    "link": "https://www.icehockeysystems.com/hockey-drills/sharks-and-minnows-w/-puck",
+    "tags": [
+      "Puck Control"
+    ],
+    "theme": "Puck Control",
+    "sub_category": ""
+  },
+  {
+    "name": "1:1 Goalie Work",
+    "link": "https://www.icehockeysystems.com/hockey-drills/1:1-goalie-work",
+    "tags": [
+      "Goalie"
+    ],
+    "theme": "Goalie",
+    "sub_category": ""
+  },
+  {
+    "name": "Goalie Skating Warm-Up",
+    "link": "https://www.icehockeysystems.com/hockey-drills/goalie-skating-warm-up",
+    "tags": [
+      "Goalie",
+      "Skating"
+    ],
+    "theme": "Goalie",
+    "sub_category": "Skating"
+  },
+  {
+    "name": "Goalie Warm-up",
+    "link": "https://www.icehockeysystems.com/hockey-drills/goalie-warm-up",
+    "tags": [
+      "Goalie"
+    ],
+    "theme": "Goalie",
+    "sub_category": ""
+  },
+  {
+    "name": "The Ullmark-Jarry",
+    "link": "https://www.icehockeysystems.com/hockey-drills/ullmark-jarry",
+    "tags": [
+      "Goalie"
+    ],
+    "theme": "Goalie",
+    "sub_category": ""
+  },
+  {
+    "name": "Goalie Screen Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/goalie-screen-drill",
+    "tags": [
+      "Down Low Play",
+      "Goalie",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Goalie, Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Down Low Play"
+  },
+  {
+    "name": "3 Player - Every Pass a One Touch",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-player-every-pass-one-touch",
+    "tags": [
+      "One Touch",
+      "Passing and Receiving",
+      "Triangles"
+    ],
+    "theme": "Passing and Receiving",
+    "sub_category": "One Touch, Triangles"
+  },
+  {
+    "name": "3 vs 1 Keep Away Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-vs-1-keep-away-game",
+    "tags": [
+      "Passing and Receiving"
+    ],
+    "theme": "Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "Activator",
+    "link": "https://www.icehockeysystems.com/hockey-drills/activator",
+    "tags": [
+      "Passing and Receiving"
+    ],
+    "theme": "Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "Hit The Tire Passing Game WIth No Goalie",
+    "link": "https://www.icehockeysystems.com/hockey-drills/hit-tire-passing-game-with-no-goalie",
+    "tags": [
+      "Passing and Receiving"
+    ],
+    "theme": "Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "Fwd to D passing with Shot",
+    "link": "https://www.icehockeysystems.com/hockey-drills/defend-net-front-progression-2-point-players",
+    "tags": [
+      "Passing and Receiving",
+      "Shooting"
+    ],
+    "theme": "Passing and Receiving, Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "4 on 2 Power Play Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/4-on-2-power-play-game",
+    "tags": [
+      "Penalty Kill",
+      "Power Play",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Power Play, Team Play - Offensive, Team Play - Defensive, Penalty Kill",
+    "sub_category": ""
+  },
+  {
+    "name": "3 Shot Unjam",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-shot-unjam",
+    "tags": [
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "Boomer Shooting Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/boomer-shooting-game",
+    "tags": [
+      "Quick Release",
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": "Quick Release"
+  },
+  {
+    "name": "Corner To Slot Shot",
+    "link": "https://www.icehockeysystems.com/hockey-drills/corner-to-slot-shot",
+    "tags": [
+      "Down Low Play",
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": "Down Low Play"
+  },
+  {
+    "name": "Improve Your Snap Shot",
+    "link": "https://www.icehockeysystems.com/hockey-drills/improve-your-snap-shot",
+    "tags": [
+      "Quick Release",
+      "Shooting",
+      "Snapshot"
+    ],
+    "theme": "Shooting",
+    "sub_category": "Snapshot, Quick Release"
+  },
+  {
+    "name": "One Timers with Rebound",
+    "link": "https://www.icehockeysystems.com/hockey-drills/one-timers-with-rebound",
+    "tags": [
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "Paint Scoring",
+    "link": "https://www.icehockeysystems.com/hockey-drills/paint-scoring",
+    "tags": [
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "Quick Release & Reaction Shooting",
+    "link": "https://www.icehockeysystems.com/hockey-drills/five-puck-scoring-race-half-ice",
+    "tags": [
+      "Quick Release",
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": "Quick Release"
+  },
+  {
+    "name": "Snapshot",
+    "link": "https://www.icehockeysystems.com/hockey-drills/snapshot",
+    "tags": [
+      "Quick Release",
+      "Shooting",
+      "Snapshot"
+    ],
+    "theme": "Shooting",
+    "sub_category": "Snapshot, Quick Release"
+  },
+  {
+    "name": "Quick Release Shooting",
+    "link": "https://www.icehockeysystems.com/hockey-drills/quick-release-shooting",
+    "tags": [
+      "Shooting"
+    ],
+    "theme": "Shooting",
+    "sub_category": ""
+  },
+  {
+    "name": "Five Puck Scoring Race - Half Ice",
+    "link": "https://www.icehockeysystems.com/hockey-drills/five-puck-scoring-race-half-ice",
+    "tags": [
+      "Fun",
+      "Goalie",
+      "Shooting"
+    ],
+    "theme": "Shooting, Goalie",
+    "sub_category": "Fun"
+  },
+  {
+    "name": "Goalie Shootout",
+    "link": "https://www.icehockeysystems.com/hockey-drills/goalie-shootout",
+    "tags": [
+      "Breakaways",
+      "Goalie",
+      "Shooting"
+    ],
+    "theme": "Shooting, Goalie",
+    "sub_category": "Breakaways"
+  },
+  {
+    "name": "3 vs 3 Corner Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-vs-3-corner-drill",
+    "tags": [
+      "One-Timers",
+      "Quick Release",
+      "Shooting",
+      "Team Play - Defensive"
+    ],
+    "theme": "Shooting, Team Play - Defensive",
+    "sub_category": "Quick Release, One-Timers"
+  },
+  {
+    "name": "3 vs 3 Handball Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-vs-3-handball-game",
+    "tags": [
+      "Fun",
+      "Quick Decisions",
+      "Skating"
+    ],
+    "theme": "Skating",
+    "sub_category": "Quick Decisions, Fun"
+  },
+  {
+    "name": "Foxhunt Race",
+    "link": "https://www.icehockeysystems.com/hockey-drills/foxhunt-race",
+    "tags": [
+      "Skating"
+    ],
+    "theme": "Skating",
+    "sub_category": ""
+  },
+  {
+    "name": "Sharks and Minnows",
+    "link": "https://www.icehockeysystems.com/hockey-drills/sharks-and-minnows",
+    "tags": [
+      "Skating"
+    ],
+    "theme": "Skating",
+    "sub_category": ""
+  },
+  {
+    "name": "Chaos",
+    "link": "https://www.icehockeysystems.com/hockey-drills/chaos",
+    "tags": [
+      "Puck Control",
+      "Skating"
+    ],
+    "theme": "Skating, Puck Control",
+    "sub_category": ""
+  },
+  {
+    "name": "Finders Keepers (Teams) - Passing and Puck Control Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/finders-keepers-teams-passing-and-puck-control-drill",
+    "tags": [
+      "Passing and Receiving",
+      "Puck Control",
+      "Skating"
+    ],
+    "theme": "Skating, Puck Control, Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "Finders Keepers - Puck Protection Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/finders-keepers-puck-protection-drill",
+    "tags": [
+      "Passing and Receiving",
+      "Puck Control",
+      "Skating"
+    ],
+    "theme": "Skating, Puck Control, Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "1 v 1 Angle Around The Net Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/hit-through-hands",
+    "tags": [
+      "Angling",
+      "Competitive Contact",
+      "Forecheck"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling, Forecheck"
+  },
+  {
+    "name": "2 V 0 Continuous Backcheck",
+    "link": "",
+    "tags": [
+      "Backcheck",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Backcheck"
+  },
+  {
+    "name": "2 on 2 Angle Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/2-on-2-angle-game",
+    "tags": [
+      "Angling",
+      "Competitive Contact",
+      "Forecheck"
+    ],
+    "theme": "Competitive Contact",
+    "sub_category": "Angling, Forecheck"
+  },
+  {
+    "name": "Bourque 3 on 3 Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/bourque-3-on-3-game",
+    "tags": [
+      "Breakout",
+      "Team Play - Defensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Breakout, Triangles"
+  },
+  {
+    "name": "Defensive Read 2 on 1 (Quarter Ice)",
+    "link": "https://www.icehockeysystems.com/hockey-drills/defensive-read-2-on-1-quarter-ice",
+    "tags": [
+      "Gap Control",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Gap Control"
+  },
+  {
+    "name": "Havoc Line Rush With Backchecker",
+    "link": "https://www.icehockeysystems.com/hockey-drills/nobles-2-v-2-2-teammates-transition-game",
+    "tags": [
+      "Backcheck",
+      "Gap Control",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Gap Control, Backcheck"
+  },
+  {
+    "name": "Offense to Defense 2 on 2",
+    "link": "https://www.icehockeysystems.com/hockey-drills/offense-to-defense-2-on-2",
+    "tags": [
+      "Gap Control",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Gap Control"
+  },
+  {
+    "name": "The Backcheck Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/the-backcheck-game",
+    "tags": [
+      "Backcheck",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive",
+    "sub_category": "Backcheck"
+  },
+  {
+    "name": "Sticks In Lanes Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/sticks-in-lanes-game",
+    "tags": [
+      "Passing and Receiving",
+      "Team Play - Defensive"
+    ],
+    "theme": "Team Play - Defensive, Passing and Receiving",
+    "sub_category": ""
+  },
+  {
+    "name": "Regroup Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/regroup-game",
+    "tags": [
+      "Breakout",
+      "Team Play - Defensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Defensive, Triangles",
+    "sub_category": "Breakout"
+  },
+  {
+    "name": "3 on 2 Keep Away Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-on-2-keep-away-game",
+    "tags": [
+      "Team Play - Offensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Triangles"
+  },
+  {
+    "name": "4 vs 2 No Stickhandle Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/4-vs-2-no-stickhandle-game",
+    "tags": [
+      "Quick Decisions",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Quick Decisions"
+  },
+  {
+    "name": "5 V 5 to 5 V 3 Face-off Game On The Circle",
+    "link": "",
+    "tags": [
+      "Face-Offs",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Face-Offs"
+  },
+  {
+    "name": "Circle Offsides",
+    "link": "https://www.icehockeysystems.com/hockey-drills/circle-offsides",
+    "tags": [
+      "Team Play - Offensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Triangles"
+  },
+  {
+    "name": "Cycle Support Drill - Option #1",
+    "link": "https://www.icehockeysystems.com/hockey-drills/cycle-support-drill-option-1",
+    "tags": [
+      "Cycling",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Cycling"
+  },
+  {
+    "name": "Gretzky 3 on 3",
+    "link": "https://www.icehockeysystems.com/hockey-drills/gretzky-3-on-3",
+    "tags": [
+      "Team Play - Offensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Triangles"
+  },
+  {
+    "name": "L-Support - Basic Triangle Movement",
+    "link": "https://www.icehockeysystems.com/hockey-drills/l-support-basic-triangle-movement",
+    "tags": [
+      "Team Play - Offensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Triangles"
+  },
+  {
+    "name": "Outlet Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/outlet-game",
+    "tags": [
+      "Quick Decisions",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Quick Decisions"
+  },
+  {
+    "name": "Quick Strike 3 v 1 Circle Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/quick-strike-3-v-1-circle-game",
+    "tags": [
+      "Quick Decisions",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Quick Decisions"
+  },
+  {
+    "name": "Run Ragged Small Area Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/run-ragged-small-area-game",
+    "tags": [
+      "Team Play - Offensive",
+      "Triangles"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Triangles"
+  },
+  {
+    "name": "Union Small Area Scoring Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/union-small-area-scoring-game",
+    "tags": [
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": ""
+  },
+  {
+    "name": "Zone Entry Drives",
+    "link": "https://www.icehockeysystems.com/hockey-drills/zone-entry-drives",
+    "tags": [
+      "Team Play - Offensive",
+      "Zone Entry"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Zone Entry"
+  },
+  {
+    "name": "Zone Entry Progression #2",
+    "link": "https://www.icehockeysystems.com/hockey-drills/zone-entry-progression-2",
+    "tags": [
+      "Team Play - Offensive",
+      "Zone Entry"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Zone Entry"
+  },
+  {
+    "name": "Designated Shooter",
+    "link": "https://www.icehockeysystems.com/hockey-drills/designated-shooter",
+    "tags": [
+      "Down Low Play",
+      "Shooting",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Shooting",
+    "sub_category": "Down Low Play"
+  },
+  {
+    "name": "Designated Shooters Umbrella Power Play Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/designated-shooters-umbrella-power-play-game",
+    "tags": [
+      "Down Low Play",
+      "Shooting",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Shooting",
+    "sub_category": "Down Low Play"
+  },
+  {
+    "name": "3 v 3 with Down Low Passer",
+    "link": "https://www.icehockeysystems.com/hockey-drills/3-v-3-with-down-low-passer",
+    "tags": [
+      "Down Low Play",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Down Low Play"
+  },
+  {
+    "name": "4 v 4 Cross Ice",
+    "link": "https://www.icehockeysystems.com/hockey-drills/4-v-4-cross-ice",
+    "tags": [
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": ""
+  },
+  {
+    "name": "Defend Net Front Progression With 2 Point Players",
+    "link": "https://www.icehockeysystems.com/hockey-drills/defend-net-front-progression-with-2-point-players",
+    "tags": [
+      "Down Low Play",
+      "Slapshot",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Down Low Play, Slapshot"
+  },
+  {
+    "name": "Griffs 2 V 2 Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/griffs-2-v-2-game",
+    "tags": [
+      "Breakout",
+      "Team Play - Defensive",
+      "Team Play - Offensive",
+      "Zone Entry"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Breakout, Zone Entry"
+  },
+  {
+    "name": "Jets 2 v 2 Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/jets-2-v-2-drill",
+    "tags": [
+      "Gap Control",
+      "Team Play - Defensive",
+      "Team Play - Offensive",
+      "Zone Entry"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Zone Entry, Gap Control"
+  },
+  {
+    "name": "Nobles 2 V 2 + 2 Teammates Transition Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/nobles-2-v-2-+-2-teammates-transition-game",
+    "tags": [
+      "Penalty Kill",
+      "Power Play",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Power Play, Penalty Kill,"
+  },
+  {
+    "name": "Nobles 2 v 2 Transition Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/nobles-2-v-2-transition-game",
+    "tags": [
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": ""
+  },
+  {
+    "name": "RPI 2 on 2",
+    "link": "https://www.icehockeysystems.com/hockey-drills/rpi-2-on-2",
+    "tags": [
+      "Gap Control",
+      "Team Play - Defensive",
+      "Team Play - Offensive",
+      "Zone Entry"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Gap Control, Zone Entry"
+  },
+  {
+    "name": "Royal Road Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/usa-step-forward-drill",
+    "tags": [
+      "Down Low Play",
+      "One-Timers",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Down Low Play, One-Timers"
+  },
+  {
+    "name": "Steal the Bacon",
+    "link": "https://www.icehockeysystems.com/hockey-drills/steal-bacon",
+    "tags": [
+      "Fun",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Fun"
+  },
+  {
+    "name": "The Breakout Game",
+    "link": "https://www.icehockeysystems.com/hockey-drills/the-breakout-game",
+    "tags": [
+      "Breakout",
+      "Forecheck",
+      "Team Play - Defensive",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive, Team Play - Defensive",
+    "sub_category": "Breakout, Forecheck"
+  },
+  {
+    "name": "Bump Pass & Attack The Net Drill",
+    "link": "https://www.icehockeysystems.com/hockey-drills/bump-pass-attack-the-net-drill",
+    "tags": [
+      "Cycling",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Cycling"
+  },
+  {
+    "name": "Pass, Shoot or Dump",
+    "link": "https://www.icehockeysystems.com/hockey-drills/simple-tools-improve-your-quick-release-shooting",
+    "tags": [
+      "Quick Decisions",
+      "Team Play - Offensive"
+    ],
+    "theme": "Team Play - Offensive",
+    "sub_category": "Quick Decisions"
+  }
+];
+        const allTags = [
+  "Angling",
+  "Backcheck",
+  "Breakaways",
+  "Breakout",
+  "Competitive Contact",
+  "Cycling",
+  "Delivering and Receiving Body Contact",
+  "Down Low Play",
+  "Face-Offs",
+  "Forecheck",
+  "Fun",
+  "Gap Control",
+  "Goalie",
+  "One Touch",
+  "One-Timers",
+  "Passing and Receiving",
+  "Penalty Kill",
+  "Power Play",
+  "Puck Control",
+  "Quick Decisions",
+  "Quick Release",
+  "Shooting",
+  "Skating",
+  "Slapshot",
+  "Snapshot",
+  "Stickhandling",
+  "Team Play - Defensive",
+  "Team Play - Offensive",
+  "Triangles",
+  "Zone Entry"
+];
+        
+        // State
+        let activeFilters = new Set();
+        let searchTerm = '';
+
+        // DOM Elements
+        const searchBox = document.getElementById('searchBox');
+        const tagsContainer = document.getElementById('tagsContainer');
+        const drillGrid = document.getElementById('drillGrid');
+        const noResults = document.getElementById('noResults');
+        const resultsCount = document.getElementById('resultsCount');
+        const activeFiltersSpan = document.getElementById('activeFilters');
+
+        // Initialize
+        function init() {
+            renderTags();
+            renderDrills();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            searchBox.addEventListener('input', (e) => {
+                searchTerm = e.target.value.toLowerCase();
+                renderDrills();
+            });
+        }
+
+        function renderTags() {
+            tagsContainer.innerHTML = allTags.map(tag => 
+                `<span class="tag" onclick="toggleFilter('${tag}')" data-tag="${tag}">${tag}</span>`
+            ).join('');
+        }
+
+        function toggleFilter(tag) {
+            if (activeFilters.has(tag)) {
+                activeFilters.delete(tag);
+            } else {
+                activeFilters.add(tag);
+            }
+            updateTagStyles();
+            renderDrills();
+        }
+
+        function updateTagStyles() {
+            document.querySelectorAll('.tag').forEach(tagEl => {
+                const tag = tagEl.dataset.tag;
+                if (activeFilters.has(tag)) {
+                    tagEl.classList.add('active');
+                } else {
+                    tagEl.classList.remove('active');
+                }
+            });
+        }
+
+        function clearAllFilters() {
+            activeFilters.clear();
+            searchTerm = '';
+            searchBox.value = '';
+            updateTagStyles();
+            renderDrills();
+        }
+
+        function renderDrills() {
+            const filteredDrills = drills.filter(drill => {
+                // Search filter
+                const matchesSearch = !searchTerm || 
+                    drill.name.toLowerCase().includes(searchTerm) ||
+                    drill.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+
+                // Tag filters
+                const matchesTags = activeFilters.size === 0 || 
+                    [...activeFilters].every(filter => drill.tags.includes(filter));
+
+                return matchesSearch && matchesTags;
+            });
+
+            if (filteredDrills.length === 0) {
+                drillGrid.style.display = 'none';
+                noResults.style.display = 'block';
+            } else {
+                drillGrid.style.display = 'block';
+                noResults.style.display = 'none';
+                
+                drillGrid.innerHTML = filteredDrills.map(drill => `
+                    <div class="drill-item">
+                        <div class="drill-name">
+                            ${drill.link ? `<a href="${drill.link}" target="_blank">${drill.name}</a>` : drill.name}
+                        </div>
+                        <div class="drill-tags">
+                            ${drill.tags.map(tag => `<span class="drill-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateStats(filteredDrills.length);
+        }
+
+        function updateStats(count) {
+            resultsCount.textContent = `Showing ${count} drill${count !== 1 ? 's' : ''}`;
+            
+            if (activeFilters.size > 0) {
+                activeFiltersSpan.textContent = `${activeFilters.size} filter${activeFilters.size !== 1 ? 's' : ''} active: ${[...activeFilters].join(', ')}`;
+            } else {
+                activeFiltersSpan.textContent = 'No filters active';
+            }
+        }
+
+        // Initialize the app
+        init();
+
+        // ===== Theme Logic: respects system, remembers choice, toggles on click =====
+        (function () {
+            const root = document.documentElement;
+            const pref = localStorage.getItem('theme') || 'auto';
+            const mq = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function apply(theme) {
+                root.classList.toggle('theme-dark', theme === 'dark' || (theme === 'auto' && mq.matches));
+                root.dataset.theme = theme;
+            }
+
+            mq.addEventListener?.('change', () => apply(root.dataset.theme || 'auto'));
+
+            apply(pref);
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                const order = ['auto','light','dark'];
+                const next = order[(order.indexOf(root.dataset.theme || 'auto') + 1) % order.length];
+                localStorage.setItem('theme', next); 
+                apply(next);
+                const label = next[0].toUpperCase() + next.slice(1);
+                document.getElementById('themeToggle').lastChild.textContent = ' ' + label;
+            });
+        })();
+    </script>
+</body>
+</html>
